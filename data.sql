@@ -1,3 +1,8 @@
+\c messagely
+
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+
 CREATE TABLE users (
     username text PRIMARY KEY,
     password text NOT NULL,

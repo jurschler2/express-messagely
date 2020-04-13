@@ -17,8 +17,8 @@ class User {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const result = await db.query(
-      `INSERT INTO users (username, password, first_name, last_name, phone)
-        VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (username, password, first_name, last_name, phone, join_at, last_login_at)
+        VALUES ($1, $2, $3, $4, $5, current_timestamp, current_timestamp)
         RETURNING username, password, first_name, last_name, phone`,
         [username, hashedPassword, first_name, last_name, phone]
     );
@@ -36,8 +36,7 @@ class User {
 
     const result = await db.query(
       `SELECT password FROM users
-        WHERE username = $1
-        RETURNING password`,
+        WHERE username = $1`,
         [username]
     );
 
@@ -78,7 +77,8 @@ class User {
   static async all() {
 
     const result = await db.query(
-      `SELECT username, first_name, last_name, phone FROM users`
+      `SELECT username, first_name, last_name 
+       FROM users`
     );
 
     if (!result.rows[0]) {
@@ -100,7 +100,13 @@ class User {
   static async get(username) { 
 
     const result = await db.query(
-      `SELECT username, first_name, last_name, phone, join_at, last_login_at FROM users
+      `SELECT username, 
+              first_name, 
+              last_name, 
+              phone, 
+              join_at, 
+              last_login_at 
+        FROM users
         WHERE username = $1`,
         [username]
     );
@@ -123,12 +129,25 @@ class User {
   static async messagesFrom(username) { 
 
     const result = await db.query(
-      `SELECT m.id, m.to_username, m.body, m.sent_at, m.read_at FROM users AS u
-        LEFT JOIN messages AS m ON u.username = m.from_username
-        WHERE username = $1
-        `,
+      `SELECT m.id, 
+              t.username, 
+              t.first_name, 
+              t.last_name, 
+              t.phone, 
+              m.body, 
+              m.sent_at, 
+              m.read_at 
+        FROM users AS f
+          LEFT JOIN messages AS m ON f.username = m.from_username
+          JOIN users AS t ON t.username = m.to_username
+        WHERE f.username = $1`,
         [username]
     );
+
+    if (!result.rows[0]) {
+      throw new ExpressError(`There is no user: ${username}`, 404);
+    }
+    return result.rows.map(m => ({body: m.body, id: m.id, sent_at: m.sent_at, read_at: m.read_at, to_user: {username: m.username, first_name: m.first_name, last_name: m.last_name, phone: m.phone}}));
 
   }
 
@@ -140,7 +159,30 @@ class User {
    *   {id, first_name, last_name, phone}
    */
 
-  static async messagesTo(username) { }
+  static async messagesTo(username) { 
+
+    const result = await db.query(
+      `SELECT m.id, 
+              f.username, 
+              f.first_name, 
+              f.last_name, 
+              f.phone, 
+              m.body, 
+              m.sent_at, 
+              m.read_at 
+        FROM users AS t
+          LEFT JOIN messages AS m ON t.username = m.to_username
+          JOIN users AS f ON f.username = m.from_username
+        WHERE t.username = $1`,
+        [username]
+    );
+
+    if (!result.rows[0]) {
+      throw new ExpressError(`There is no user: ${username}`, 404);
+    }
+    return result.rows.map(m => ({body: m.body, id: m.id, sent_at: m.sent_at, read_at: m.read_at, from_user: {username: m.username, first_name: m.first_name, last_name: m.last_name, phone: m.phone}}));
+
+  }
 }
 
 
