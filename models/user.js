@@ -39,20 +39,10 @@ class User {
         WHERE username = $1`,
         [username]
     );
-
-    if (!result.rows[0]) {
-      throw new ExpressError(`There is no user: ${username}`, 404);
+    
+      let user = result.rows[0];
+      return user && await bcrypt.compare(password, user.password);
     }
-
-    const dbPassword = result.rows[0].password;
-
-    if (await bcrypt.compare(password, dbPassword) === true)  {
-      return true;
-    } else {
-      return false;
-    }
-
-  }
 
   /** Update last_login_at for user */
 
