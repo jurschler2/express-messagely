@@ -23,10 +23,6 @@ class User {
         [username, hashedPassword, first_name, last_name, phone]
     );
 
-    if (!result.rows[0]) {
-      throw new ExpressError(`There was a problem: ${username}`, 404);
-    }
-
     return result.rows[0];
   }
 
@@ -51,14 +47,13 @@ class User {
     const result = await db.query(
       `UPDATE users SET last_login_at = current_timestamp
         WHERE username = $1
-        RETURNING username, last_login_at`,
+        RETURNING username`,
         [username]
     );
     
     if (!result.rows[0]) {
       throw new ExpressError(`There is no user: ${username}`, 404);
     }
-    return result.rows[0];
   }
 
   /** All: basic info on all users:
@@ -71,9 +66,6 @@ class User {
        FROM users`
     );
 
-    if (!result.rows[0]) {
-      throw new ExpressError(`There are no users`, 404);
-    }
     return result.rows;
 
    }
@@ -134,10 +126,11 @@ class User {
         [username]
     );
 
-    if (!result.rows[0]) {
-      throw new ExpressError(`There is no user: ${username}`, 404);
-    }
-    return result.rows.map(m => ({body: m.body, id: m.id, sent_at: m.sent_at, read_at: m.read_at, to_user: {username: m.username, first_name: m.first_name, last_name: m.last_name, phone: m.phone}}));
+    // if (!result.rows[0]) {
+    //   throw new ExpressError(`There is no user: ${username}`, 404);
+    // }
+    return result.rows.map(m => ({body: m.body, id: m.id, sent_at: m.sent_at, read_at: m.read_at, 
+      to_user: {username: m.username, first_name: m.first_name, last_name: m.last_name, phone: m.phone}}));
 
   }
 
@@ -167,10 +160,11 @@ class User {
         [username]
     );
 
-    if (!result.rows[0]) {
-      throw new ExpressError(`There is no user: ${username}`, 404);
-    }
-    return result.rows.map(m => ({body: m.body, id: m.id, sent_at: m.sent_at, read_at: m.read_at, from_user: {username: m.username, first_name: m.first_name, last_name: m.last_name, phone: m.phone}}));
+    // if (!result.rows[0]) {
+    //   throw new ExpressError(`There is no user: ${username}`, 404);
+    // }
+    return result.rows.map(m => ({body: m.body, id: m.id, sent_at: m.sent_at, read_at: m.read_at, 
+      from_user: {username: m.username, first_name: m.first_name, last_name: m.last_name, phone: m.phone}}));
 
   }
 }

@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/user");
-const messages = require("../models/message");
+const Message = require("../models/message");
 const { SECRET_KEY, BCRYPT_WORK_FACTOR } = require("../config");
 const jwt = require("jsonwebtoken");
 const ExpressError = require("../expressError");
@@ -27,7 +27,7 @@ router.post('/login', async function (req, res, next) {
             // return token
             return res.json({ token });
         }else{
-        throw new ExpressError("Invalid User/Password", 400);
+          throw new ExpressError("This is our error code we wrote Invalid User/Password", 400);
         }
     } 
     catch (err) {
@@ -43,11 +43,20 @@ router.post('/login', async function (req, res, next) {
  *
  *  Make sure to update their last-login!
  */
+
+// Started to render a front-end, not currently functional
+
+router.get('/register', function(reg, res, next) {
+
+  return res.render("/templates/register.html")
+
+}) 
+
 router.post('/register', async function (req, res, next) {
     try {
         // const { username, password, first_name, last_name, phone} = req.body;
-        // let user = await user.register(username, password, first_name, last_name, phone);
-        let user = await user.register(req.body);
+        // let user = await User.register(username, password, first_name, last_name, phone);
+        let user = await User.register(req.body);
         //  give a token
         let payload = { username: user.username };
         let token = jwt.sign(payload, SECRET_KEY);
