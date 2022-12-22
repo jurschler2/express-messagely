@@ -16,7 +16,7 @@
     "express": "^4.16.4",
     "express-cors": "0.0.3",
     "jest": "^25.3.0",
-    "jsonwebtoken": "^8.3.0",
+    "jsonwebtoken": "^9.0.0",
     "nodemon": "^2.0.3",
     "nunjucks": "^3.2.1",
     "pg": "^7.5.0",
